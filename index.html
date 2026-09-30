@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#4F46E5" />
+  <meta name="description" content="Coding Hub — Learn HTML, CSS & JavaScript with short lessons, timed quizzes and performance tracking." />
+  <title>Coding Hub</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Coding Hub" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --text: #0F172A;
+      --muted: #64748B;
+      --muted-2: #94A3B8;
+      --line: #E2E8F0;
+      --indigo: #4F46E5;
+      --indigo-dark: #4338CA;
+      --indigo-soft: #EEF2FF;
+      --green: #10B981;
+      --green-soft: #D1FAE5;
+      --red: #EF4444;
+      --red-soft: #FEE2E2;
+      --amber: #F59E0B;
+      --amber-soft: #FEF3C7;
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(15,23,42,0.06);
+      --font: 'Inter', system-ui, sans-serif;
+      --display: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    input, select, textarea { font-family: inherit; }
+    .hidden { display: none !important; }
+
+    .auth-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 24px; background: linear-gradient(160deg, #EEF2FF 0%, #F8FAFC 50%, #F0FDF4 100%);
+    }
+    .auth-card {
+      background: var(--surface); border-radius: 20px; padding: 36px 32px;
+      width: 100%; max-width: 400px; box-shadow: var(--shadow); border: 1px solid var(--line);
+    }
+    .auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .auth-logo .mark {
+      width: 42px; height: 42px; border-radius: 12px; background: var(--indigo);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-family: var(--display); font-weight: 800; font-size: 16px;
+    }
+    .auth-logo h1 { font-family: var(--display); font-size: 1.35rem; font-weight: 800; }
+    .auth-tabs { display: flex; background: var(--bg); border-radius: 12px; padding: 4px; margin-bottom: 22px; }
+    .auth-tab {
+      flex: 1; padding: 10px; border-radius: 10px; font-weight: 600; font-size: 14px;
+      color: var(--muted); text-align: center; transition: all .15s;
+    }
+    .auth-tab.active { background: var(--surface); color: var(--indigo); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .form-group input {
+      width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--line);
+      font-size: 14px; outline: none; background: var(--bg); transition: border-color .15s;
+    }
+    .form-group input:focus { border-color: var(--indigo); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 20px; border-radius: 12px; font-weight: 700; font-size: 14px;
+      transition: filter .15s, transform .1s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--indigo); color: #fff; width: 100%; }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-ghost { background: var(--bg); color: var(--text); border: 1px solid var(--line); }
+    .form-msg { font-size: 13px; min-height: 18px; margin-top: 10px; }
+    .form-msg.ok { color: var(--green); }
+    .form-msg.err { color: var(--red); }
+
+    .app { display: none; min-height: 100vh; flex-direction: column; }
+    .app.show { display: flex; }
+    .topbar {
+      display: flex; align-items: center; gap: 16px; padding: 12px 20px;
+      background: var(--surface); border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; z-index: 40;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 17px; }
+    .brand .mark {
+      width: 34px; height: 34px; border-radius: 10px; background: var(--indigo);
+      color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px;
+    }
+    .top-nav { display: flex; gap: 4px; margin-left: 24px; }
+    .top-nav a {
+      padding: 8px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
+      color: var(--muted); transition: all .15s;
+    }
+    .top-nav a:hover, .top-nav a.active { background: var(--indigo-soft); color: var(--indigo); }
+    .top-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .user-pill {
+      display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px;
+      background: var(--bg); border-radius: 999px; font-size: 13px; font-weight: 600;
+    }
+    .user-pill .av {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--indigo);
+      color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;
+    }
+    .content { flex: 1; max-width: 960px; width: 100%; margin: 0 auto; padding: 28px 20px 60px; }
+
+    .page-title { font-family: var(--display); font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+    .page-sub { color: var(--muted); font-size: 14.5px; margin-bottom: 28px; }
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px; margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 18px; box-shadow: var(--shadow);
+    }
+    .stat-card .label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat-card .value { font-family: var(--display); font-size: 1.7rem; font-weight: 800; margin-top: 4px; }
+    .stat-card .value.indigo { color: var(--indigo); }
+    .stat-card .value.green { color: var(--green); }
+    .stat-card .value.amber { color: var(--amber); }
+
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .section-head h2 { font-family: var(--display); font-size: 1.15rem; font-weight: 700; }
+    .track-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .track-btn {
+      padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+      background: var(--bg); color: var(--muted); border: 1px solid var(--line);
+    }
+    .track-btn.active { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+
+    .lesson-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .lesson-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 20px; box-shadow: var(--shadow); transition: box-shadow .2s, transform .15s;
+      cursor: pointer; display: flex; flex-direction: column; gap: 10px;
+    }
+    .lesson-card:hover { box-shadow: 0 8px 28px rgba(15,23,42,0.1); transform: translateY(-2px); }
+    .lesson-card .tag {
+      display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px;
+      border-radius: 6px; background: var(--indigo-soft); color: var(--indigo); width: fit-content;
+    }
+    .lesson-card .tag.html { background: #FEE2E2; color: #B91C1C; }
+    .lesson-card .tag.css { background: #DBEAFE; color: #1D4ED8; }
+    .lesson-card .tag.js { background: #FEF9C3; color: #A16207; }
+    .lesson-card h3 { font-size: 15.5px; font-weight: 700; line-height: 1.3; }
+    .lesson-card p { font-size: 13.5px; color: var(--muted); flex: 1; }
+    .lesson-card .meta {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12.5px; color: var(--muted-2); padding-top: 8px; border-top: 1px solid var(--line);
+    }
+    .lesson-card .status { font-weight: 600; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+    .status.done { background: var(--green-soft); color: #059669; }
+    .status.open { background: var(--indigo-soft); color: var(--indigo); }
+
+    .lesson-view .back {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px;
+      font-weight: 600; color: var(--muted); margin-bottom: 20px;
+    }
+    .lesson-view .back:hover { color: var(--indigo); }
+    .lesson-body {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 28px; box-shadow: var(--shadow); margin-bottom: 24px;
+    }
+    .lesson-body h2 { font-family: var(--display); font-size: 1.4rem; font-weight: 800; margin-bottom: 16px; }
+    .lesson-body .content-html { font-size: 15px; line-height: 1.7; color: #334155; }
+    .lesson-body .content-html h3 { font-size: 1.1rem; margin: 20px 0 10px; color: var(--text); }
+    .lesson-body .content-html p { margin-bottom: 12px; }
+    .lesson-body .content-html ul, .lesson-body .content-html ol { margin: 0 0 14px 20px; }
+    .lesson-body .content-html code {
+      background: #F1F5F9; padding: 2px 6px; border-radius: 4px; font-size: 13.5px;
+    }
+    .lesson-body .content-html pre {
+      background: #0F172A; color: #E2E8F0; padding: 16px; border-radius: 10px;
+      overflow-x: auto; font-size: 13.5px; margin: 14px 0;
+    }
+    .lesson-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .quiz-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 24px;
+    }
+    .timer {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 12px; background: var(--amber-soft);
+      font-family: var(--display); font-weight: 800; font-size: 1.25rem; color: #B45309;
+    }
+    .timer.danger { background: var(--red-soft); color: var(--red); animation: pulse 1s infinite; }
+    @keyframes pulse { 50% { opacity: 0.7; } }
+    .quiz-progress { font-size: 13.5px; font-weight: 600; color: var(--muted); }
+    .question-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px;
+    }
+    .question-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 18px; line-height: 1.4; }
+    .option {
+      display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px;
+      border: 1.5px solid var(--line); border-radius: 12px; margin-bottom: 10px;
+      cursor: pointer; transition: all .15s; background: var(--bg);
+    }
+    .option:hover { border-color: var(--indigo); background: var(--indigo-soft); }
+    .option.selected { border-color: var(--indigo); background: var(--indigo-soft); }
+    .option input { margin-top: 3px; accent-color: var(--indigo); }
+    .option label { flex: 1; cursor: pointer; font-size: 14.5px; }
+
+    .result-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 32px; text-align: center; box-shadow: var(--shadow); max-width: 480px; margin: 0 auto;
+    }
+    .result-card .score-big {
+      font-family: var(--display); font-size: 3rem; font-weight: 800;
+      color: var(--indigo); margin: 12px 0;
+    }
+    .result-card .pass { color: var(--green); }
+    .result-card .fail { color: var(--red); }
+
+    .progress-table {
+      width: 100%; border-collapse: collapse; background: var(--surface);
+      border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line);
+      box-shadow: var(--shadow); font-size: 14px;
+    }
+    .progress-table th {
+      text-align: left; padding: 12px 16px; background: var(--bg);
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--muted); border-bottom: 1px solid var(--line);
+    }
+    .progress-table td { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .progress-table tr:last-child td { border-bottom: none; }
+
+    .ai-panel {
+      background: linear-gradient(135deg, #EEF2FF, #F0FDF4);
+      border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 20px; margin-top: 24px;
+    }
+    .ai-panel h3 { font-family: var(--display); font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+    .ai-panel textarea {
+      width: 100%; min-height: 100px; padding: 12px; border-radius: 10px;
+      border: 1px solid var(--line); font-size: 14px; margin-bottom: 12px; resize: vertical;
+    }
+    .ai-result {
+      margin-top: 12px; padding: 14px; background: var(--surface); border-radius: 10px;
+      font-size: 14px; line-height: 1.6; border: 1px solid var(--line); white-space: pre-wrap;
+    }
+
+    .admin-gate {
+      max-width: 360px; margin: 80px auto; background: var(--surface);
+      border: 1px solid var(--line); border-radius: var(--radius); padding: 28px;
+      box-shadow: var(--shadow); text-align: center;
+    }
+    .admin-panel .admin-section {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow);
+    }
+    .admin-panel h3 { font-family: var(--display); font-size: 1.05rem; font-weight: 700; margin-bottom: 14px; }
+    .admin-list { list-style: none; }
+    .admin-list li {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px;
+    }
+    .admin-list li:last-child { border-bottom: none; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--text); color: #fff; padding: 12px 22px; border-radius: 12px;
+      font-size: 14px; font-weight: 500; z-index: 500; opacity: 0; transition: all .3s;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+
+    .btn-download { background: linear-gradient(135deg, #0F172A, #1E293B); color: #fff; width: 100%; margin-top: 10px; }
+    .auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 12px; font-size: 12px; color: var(--muted-2); font-weight: 600; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    .form-group .hint { font-size: 11.5px; color: var(--muted); font-weight: 400; margin-top: 4px; }
+    .cert-banner { background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #4F46E5 100%); color: #fff; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow); }
+    .cert-banner h3 { font-family: var(--display); font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .cert-banner p { font-size: 13.5px; opacity: 0.85; }
+    .cert-banner .btn { width: auto; background: #F59E0B; color: #0F172A; }
+    .cert-banner.locked .btn { background: rgba(255,255,255,0.2); color: #fff; cursor: not-allowed; }
+    .cert-preview-wrap { max-width: 700px; margin: 0 auto 24px; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 40px rgba(15,23,42,0.12); border: 1px solid var(--line); background: #fff; }
+    .cert-preview-wrap canvas { width: 100%; height: auto; display: block; }
+    .cert-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .cert-page { text-align: center; }
+
+    @media (max-width: 700px) {
+      .top-nav { display: none; }
+      .content { padding: 20px 16px 48px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    [data-theme="dark"] {
+      --bg: #0B1220;
+      --surface: #111827;
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+      --muted-2: #64748B;
+      --line: #1F2937;
+      --indigo: #818CF8;
+      --indigo-dark: #6366F1;
+      --indigo-soft: #1E1B4B;
+      --green: #34D399;
+      --green-soft: #064E3B;
+      --red: #F87171;
+      --red-soft: #7F1D1D;
+      --amber: #FBBF24;
+      --amber-soft: #78350F;
+      --shadow: 0 4px 24px rgba(0,0,0,0.35);
+    }
+    [data-theme="dark"] body { background: var(--bg); color: var(--text); }
+    [data-theme="dark"] .auth-screen { background: linear-gradient(160deg, #0B1220 0%, #111827 50%, #0F172A 100%); }
+    [data-theme="dark"] .lesson-body .content-html pre,
+    [data-theme="dark"] pre { background: #020617; }
+    [data-theme="dark"] .option { background: #0B1220; }
+    .theme-btn {
+      width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--bg); display: inline-flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--text);
+    }
+    .theme-btn:hover { border-color: var(--indigo); background: var(--indigo-soft); }
+
+    /* Lab / Project manager */
+    .content.lab-wide { max-width: 1200px; }
+    .lab-layout { display: grid; grid-template-columns: 240px 1fr; gap: 16px; min-height: 70vh; }
+    @media (max-width: 900px) { .lab-layout { grid-template-columns: 1fr; } }
+    .lab-sidebar {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px;
+    }
+    .lab-sidebar h3 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+    .proj-list { list-style: none; flex: 1; overflow-y: auto; max-height: 320px; }
+    .proj-list li {
+      display: flex; align-items: center; justify-content: space-between; gap: 6px;
+      padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13.5px; margin-bottom: 4px;
+      border: 1px solid transparent;
+    }
+    .proj-list li:hover { background: var(--bg); }
+    .proj-list li.active { background: var(--indigo-soft); color: var(--indigo); border-color: var(--indigo); font-weight: 600; }
+    .proj-list li .del { opacity: 0.5; font-size: 12px; padding: 2px 6px; }
+    .proj-list li .del:hover { opacity: 1; color: var(--red); }
+    .lab-main { display: flex; flex-direction: column; gap: 12px; }
+    .lab-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .lab-tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 10px; }
+    .lab-tab { padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .lab-tab.active { background: var(--surface); color: var(--indigo); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .lab-editors { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 800px) { .lab-editors { grid-template-columns: 1fr; } }
+    .lab-pane {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      overflow: hidden; display: flex; flex-direction: column; min-height: 280px;
+    }
+    .lab-pane .pane-head {
+      padding: 8px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--muted); border-bottom: 1px solid var(--line); background: var(--bg);
+    }
+    .lab-pane textarea {
+      flex: 1; width: 100%; min-height: 220px; border: none; outline: none; resize: vertical;
+      padding: 12px; font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 13px;
+      background: var(--surface); color: var(--text); line-height: 1.5;
+    }
+    .lab-preview {
+      background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+      min-height: 280px; overflow: hidden;
+    }
+    .lab-preview iframe { width: 100%; height: 320px; border: none; background: #fff; }
+    .lab-name-input {
+      flex: 1; min-width: 140px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--bg); color: var(--text); font-size: 14px; font-weight: 600;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="mark">CH</div>
+        <h1>Coding Hub</h1>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth="login">Log in</button>
+        <button class="auth-tab" data-auth="signup">Sign up</button>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" required placeholder="you@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" />
+        </div>
+        <button type="submit" class="btn btn-primary">Log in</button>
+        <p class="form-msg" id="loginMsg"></p>
+      </form>
+      <form id="signupForm" class="hidden">
+        <div class="form-group">
+          <label>Full name (for certificate)</label>
+          <input type="text" id="signupName" required minlength="2" placeholder="Your full name" autocomplete="name" />
+          <p class="hint">This exact name will appear on your Certificate of Completion.</p>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="signupEmail" required placeholder="you@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="signupPassword" required minlength="6" placeholder="Min 6 characters" />
+        </div>
+        <button type="submit" class="btn btn-primary">Create account</button>
+        <p class="form-msg" id="signupMsg"></p>
+      </form>
+      <div class="auth-divider">or</div>
+      <button class="btn btn-ghost" style="width:100%" id="guestBtn">Continue as guest</button>
+      <button class="btn btn-download" id="downloadAppBtn" type="button">↓ Download Coding Hub app</button>
+      <p style="font-size:11.5px;color:var(--muted);text-align:center;margin-top:10px">Offline ZIP · unpack and open index.html</p>
+    </div>
+  </div>
+
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand"><div class="mark">CH</div> Coding Hub</div>
+      <nav class="top-nav">
+        <a href="#/" class="nav-link active" data-route="/">Dashboard</a>
+        <a href="#/lab" class="nav-link" data-route="/lab">Code Lab</a>
+        <a href="#/progress" class="nav-link" data-route="/progress">My Performance</a>
+        <a href="#/certificate" class="nav-link" data-route="/certificate">Certificate</a>
+        <a href="#/ai" class="nav-link" data-route="/ai">AI Check</a>
+      </nav>
+      <div class="top-right">
+        <button class="theme-btn" id="themeToggle" type="button" title="Toggle light/dark mode" aria-label="Toggle theme">🌙</button>
+        <div class="user-pill">
+          <div class="av" id="userAv">U</div>
+          <span id="userNameLabel">User</span>
+        </div>
+        <button class="btn btn-ghost" style="padding:8px 12px;font-size:13px" id="logoutBtn">Logout</button>
+      </div>
+    </header>
+    <main class="content" id="mainContent"></main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://gukzoovzpwmlpdseinkj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1a3pvb3Z6cHdtbHBkc2VpbmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MDQ2NTIsImV4cCI6MjEwMzQ4MDY1Mn0.mJ_HY4JMO9dRLJ9c_CAfHHw8wyWCP_zdWU86K3-AL4k';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const GEMINI_API_KEY = '';
+    const CERT_TEMPLATE = 'certificate-template.jpg';
+
+    /* ========== THEME ========== */
+    function applyTheme(mode) {
+      document.documentElement.setAttribute('data-theme', mode);
+      localStorage.setItem('ch_theme', mode);
+      ['themeToggle','themeToggleAuth'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.textContent = mode === 'dark' ? '☀️' : '🌙';
+      });
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.content = mode === 'dark' ? '#0B1220' : '#4F46E5';
+    }
+    (function initTheme() {
+      const saved = localStorage.getItem('ch_theme');
+      const preferDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(saved || (preferDark ? 'dark' : 'light'));
+    })();
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      applyTheme(cur === 'dark' ? 'light' : 'dark');
+    }
+    document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+    document.getElementById('themeToggleAuth')?.addEventListener('click', toggleTheme);
+
+    /* ========== PERSONAL PROJECTS (local) ========== */
+    function projectsKey() {
+      if (currentUser?.id) return 'ch_projects_' + currentUser.id;
+      if (currentUser?.email) return 'ch_projects_' + currentUser.email;
+      return 'ch_projects_guest';
+    }
+    function loadProjects() {
+      try { return JSON.parse(localStorage.getItem(projectsKey()) || '[]'); } catch { return []; }
+    }
+    function saveProjects(list) {
+      localStorage.setItem(projectsKey(), JSON.stringify(list));
+    }
+    const DEFAULT_HTML = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>My Project</title>
+</head>
+<body>
+  <h1>Hello Coding Hub</h1>
+  <p>Edit HTML, CSS and JS — then Run.</p>
+  <button id="btn">Click me</button>
+</body>
+</html>`;
+    const DEFAULT_CSS = `body {
+  font-family: system-ui, sans-serif;
+  padding: 24px;
+  background: #f8fafc;
+  color: #0f172a;
+}
+h1 { color: #4f46e5; }
+button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
+  cursor: pointer;
+}`;
+    const DEFAULT_JS = `document.getElementById('btn')?.addEventListener('click', () => {
+  alert('It works!');
+});`;
+
+ // paste free key from https://aistudio.google.com/apikey
+    const ADMIN_PASSWORD = 'codinghub-admin-2026';
+    
+    const COURSES = [
+      // ===== HTML =====
+      {
+        id: 'html-1', title: 'What is HTML?', tag: 'HTML', duration: '6 min', order: 1,
+        content: `
+          <h3>What is HTML?</h3>
+          <p>HTML (HyperText Markup Language) is the standard language for creating web pages. It describes the structure of a page using elements (tags).</p>
+          <h3>Basic document structure</h3>
+          <pre>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My Page&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Hello World&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+          <h3>Key points</h3>
+          <ul>
+            <li>HTML is not a programming language — it is a markup language.</li>
+            <li>Browsers read HTML and display the content.</li>
+            <li>Every page starts with <code>&lt;!DOCTYPE html&gt;</code>.</li>
+          </ul>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'What does HTML stand for?', options: ['HyperText Markup Language', 'High Tech Modern Language', 'Home Tool Markup Language', 'Hyperlink and Text Markup Language'], correct: 0 },
+            { q: 'Which tag is required at the top of an HTML5 document?', options: ['&lt;html&gt;', '&lt;!DOCTYPE html&gt;', '&lt;head&gt;', '&lt;meta&gt;'], correct: 1 },
+            { q: 'HTML is primarily used for:', options: ['Styling pages', 'Structuring content', 'Database queries', 'Server logic'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'html-2', title: 'Document Structure', tag: 'HTML', duration: '7 min', order: 2,
+        content: `
+          <h3>The skeleton of every page</h3>
+          <p>An HTML document has a clear hierarchy: <code>html</code> → <code>head</code> + <code>body</code>.</p>
+          <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Page Title&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;!-- visible content --&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+          <h3>Head vs Body</h3>
+          <ul>
+            <li><code>&lt;head&gt;</code> — metadata, title, links to CSS, scripts (not visible).</li>
+            <li><code>&lt;body&gt;</code> — everything the user sees.</li>
+          </ul>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'Where does the page title belong?', options: ['In &lt;body&gt;', 'In &lt;head&gt;', 'Outside &lt;html&gt;', 'In a &lt;div&gt;'], correct: 1 },
+            { q: 'What does the viewport meta tag help with?', options: ['SEO only', 'Responsive display on mobile', 'Adding images', 'Changing fonts'], correct: 1 },
+            { q: 'Content the user sees goes inside:', options: ['&lt;head&gt;', '&lt;body&gt;', '&lt;meta&gt;', '&lt;title&gt;'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'html-3', title: 'Text & Links', tag: 'HTML', duration: '8 min', order: 3,
+        content: `
+          <h3>Headings and paragraphs</h3>
+          <p>Use <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code> for headings and <code>&lt;p&gt;</code> for paragraphs.</p>
+          <pre>&lt;h1&gt;Main title&lt;/h1&gt;
+&lt;p&gt;This is a paragraph of text.&lt;/p&gt;
+&lt;a href="https://example.com"&gt;Visit Example&lt;/a&gt;</pre>
+          <h3>Links</h3>
+          <ul>
+            <li><code>href</code> — destination URL.</li>
+            <li><code>target="_blank"</code> — open in new tab.</li>
+            <li>Relative paths work for pages on the same site.</li>
+          </ul>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'Which tag creates a hyperlink?', options: ['&lt;link&gt;', '&lt;a&gt;', '&lt;href&gt;', '&lt;url&gt;'], correct: 1 },
+            { q: 'The largest heading tag is:', options: ['&lt;h6&gt;', '&lt;h1&gt;', '&lt;heading&gt;', '&lt;title&gt;'], correct: 1 },
+            { q: 'To open a link in a new tab use:', options: ['target="_self"', 'target="_blank"', 'new="true"', 'open="tab"'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'html-4', title: 'Images & Media', tag: 'HTML', duration: '7 min', order: 4,
+        content: `
+          <h3>Images</h3>
+          <pre>&lt;img src="photo.jpg" alt="Description of the image" width="400"&gt;</pre>
+          <p>Always include <code>alt</code> text for accessibility and SEO.</p>
+          <h3>Audio & Video</h3>
+          <pre>&lt;audio controls src="sound.mp3"&gt;&lt;/audio&gt;
+&lt;video controls width="640"&gt;
+  &lt;source src="movie.mp4" type="video/mp4"&gt;
+&lt;/video&gt;</pre>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'Which attribute is required for accessibility on images?', options: ['src', 'alt', 'width', 'title'], correct: 1 },
+            { q: 'How do you add play controls to a video?', options: ['play="true"', 'controls', 'autoplay', 'buttons'], correct: 1 },
+            { q: 'The image source path goes in:', options: ['href', 'src', 'link', 'path'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'html-5', title: 'Forms', tag: 'HTML', duration: '9 min', order: 5,
+        content: `
+          <h3>Basic form</h3>
+          <pre>&lt;form action="/submit" method="post"&gt;
+  &lt;label for="name"&gt;Name&lt;/label&gt;
+  &lt;input type="text" id="name" name="name" required&gt;
+  &lt;input type="email" name="email" placeholder="you@email.com"&gt;
+  &lt;button type="submit"&gt;Send&lt;/button&gt;
+&lt;/form&gt;</pre>
+          <h3>Common input types</h3>
+          <ul>
+            <li><code>text</code>, <code>email</code>, <code>password</code>, <code>number</code></li>
+            <li><code>checkbox</code>, <code>radio</code>, <code>file</code></li>
+            <li><code>textarea</code> for multi-line text</li>
+          </ul>
+        `,
+        quiz: {
+          timeLimitSec: 70,
+          questions: [
+            { q: 'Which attribute links a label to an input?', options: ['name', 'for', 'id', 'label'], correct: 1 },
+            { q: 'To make a field required use:', options: ['needed', 'required', 'must', 'validate'], correct: 1 },
+            { q: 'The form method that hides data in the URL is:', options: ['GET', 'POST', 'PUT', 'SEND'], correct: 0 }
+          ]
+        }
+      },
+      {
+        id: 'html-6', title: 'Tables & Semantics', tag: 'HTML', duration: '8 min', order: 6,
+        content: `
+          <h3>Tables</h3>
+          <pre>&lt;table&gt;
+  &lt;thead&gt;&lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Age&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+  &lt;tbody&gt;&lt;tr&gt;&lt;td&gt;Ada&lt;/td&gt;&lt;td&gt;36&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;
+&lt;/table&gt;</pre>
+          <h3>Semantic elements</h3>
+          <ul>
+            <li><code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code></li>
+            <li><code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;aside&gt;</code></li>
+          </ul>
+          <p>Semantic tags improve accessibility and SEO.</p>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'Table header cells use which tag?', options: ['&lt;td&gt;', '&lt;th&gt;', '&lt;tr&gt;', '&lt;thead&gt;'], correct: 1 },
+            { q: 'Which is a semantic element?', options: ['&lt;div&gt;', '&lt;span&gt;', '&lt;article&gt;', '&lt;font&gt;'], correct: 2 },
+            { q: 'Rows in a table are created with:', options: ['&lt;td&gt;', '&lt;tr&gt;', '&lt;row&gt;', '&lt;table-row&gt;'], correct: 1 }
+          ]
+        }
+      },
+      // ===== CSS =====
+      {
+        id: 'css-1', title: 'What is CSS?', tag: 'CSS', duration: '6 min', order: 7,
+        content: `
+          <h3>Cascading Style Sheets</h3>
+          <p>CSS controls how HTML elements look: colors, fonts, layout, spacing.</p>
+          <pre>/* External stylesheet */
+body {
+  font-family: system-ui, sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+}</pre>
+          <h3>Ways to add CSS</h3>
+          <ul>
+            <li>External file (<code>&lt;link rel="stylesheet"&gt;</code>) — preferred</li>
+            <li>Internal <code>&lt;style&gt;</code> in the head</li>
+            <li>Inline <code>style=""</code> attribute (avoid for large styles)</li>
+          </ul>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'CSS stands for:', options: ['Creative Style System', 'Cascading Style Sheets', 'Computer Style Syntax', 'Colorful Style Sheets'], correct: 1 },
+            { q: 'Best practice for site-wide styles is:', options: ['Inline styles', 'External stylesheet', 'Only &lt;style&gt; tags', 'JavaScript'], correct: 1 },
+            { q: 'Which property changes text color?', options: ['font-color', 'text-color', 'color', 'foreground'], correct: 2 }
+          ]
+        }
+      },
+      {
+        id: 'css-2', title: 'Selectors', tag: 'CSS', duration: '8 min', order: 8,
+        content: `
+          <h3>Targeting elements</h3>
+          <pre>/* Element */  p { margin: 0; }
+/* Class */    .card { padding: 1rem; }
+/* ID */       #hero { background: navy; }
+/* Attribute */ input[type="email"] { border: 1px solid #ccc; }
+/* Pseudo */   a:hover { color: blue; }</pre>
+          <h3>Specificity (simple view)</h3>
+          <p>ID &gt; Class &gt; Element. Inline styles beat almost everything.</p>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'A class selector starts with:', options: ['#', '.', '*', '@'], correct: 1 },
+            { q: 'An ID selector starts with:', options: ['.', '#', '!', '&'], correct: 1 },
+            { q: 'Which has higher specificity?', options: ['p', '.text', '#main', 'div span'], correct: 2 }
+          ]
+        }
+      },
+      {
+        id: 'css-3', title: 'Box Model', tag: 'CSS', duration: '8 min', order: 9,
+        content: `
+          <h3>Content → Padding → Border → Margin</h3>
+          <pre>.box {
+  width: 200px;
+  padding: 16px;
+  border: 2px solid #333;
+  margin: 20px;
+  box-sizing: border-box; /* width includes padding+border */
+}</pre>
+          <p>Use <code>box-sizing: border-box</code> so width/height behave predictably.</p>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'The space inside the border is:', options: ['margin', 'padding', 'outline', 'gap'], correct: 1 },
+            { q: 'box-sizing: border-box means width includes:', options: ['Only content', 'Content + padding + border', 'Only margin', 'Only border'], correct: 1 },
+            { q: 'Space outside the border is:', options: ['padding', 'margin', 'gap', 'inset'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'css-4', title: 'Flexbox', tag: 'CSS', duration: '9 min', order: 10,
+        content: `
+          <h3>One-dimensional layout</h3>
+          <pre>.row {
+  display: flex;
+  justify-content: space-between; /* main axis */
+  align-items: center;            /* cross axis */
+  gap: 12px;
+}
+.row > * { flex: 1; }</pre>
+          <ul>
+            <li><code>flex-direction</code>: row | column</li>
+            <li><code>justify-content</code>: start, center, space-between…</li>
+            <li><code>align-items</code>: stretch, center, flex-start…</li>
+          </ul>
+        `,
+        quiz: {
+          timeLimitSec: 70,
+          questions: [
+            { q: 'To make a container a flex container use:', options: ['display: block', 'display: flex', 'position: flex', 'layout: flex'], correct: 1 },
+            { q: 'justify-content controls the:', options: ['Cross axis', 'Main axis', 'Z-index', 'Font size'], correct: 1 },
+            { q: 'gap sets space between:', options: ['Text lines', 'Flex/grid items', 'Margins only', 'Borders'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'css-5', title: 'CSS Grid', tag: 'CSS', duration: '9 min', order: 11,
+        content: `
+          <h3>Two-dimensional layout</h3>
+          <pre>.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.featured { grid-column: span 2; }</pre>
+          <p>Grid is ideal for overall page layouts; Flexbox for components inside cells.</p>
+        `,
+        quiz: {
+          timeLimitSec: 70,
+          questions: [
+            { q: 'Grid is best for:', options: ['Single row only', 'Two-dimensional layouts', 'Text only', 'Animations'], correct: 1 },
+            { q: 'repeat(3, 1fr) creates:', options: ['3 fixed columns', '3 equal flexible columns', '3 rows', '3 gaps'], correct: 1 },
+            { q: 'To span two columns:', options: ['width: 2', 'grid-column: span 2', 'colspan="2"', 'flex: 2'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'css-6', title: 'Responsive Design', tag: 'CSS', duration: '8 min', order: 12,
+        content: `
+          <h3>Mobile-first media queries</h3>
+          <pre>/* Base: mobile */
+.container { padding: 1rem; }
+
+@media (min-width: 768px) {
+  .container { max-width: 720px; margin: 0 auto; }
+}
+@media (min-width: 1024px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}</pre>
+          <p>Always set the viewport meta tag in HTML.</p>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'Media queries are written with:', options: ['@media', '@query', '@screen', '@responsive'], correct: 0 },
+            { q: 'Mobile-first means you start styles for:', options: ['Desktop then override', 'Mobile then enhance', 'Print only', 'Tablets only'], correct: 1 },
+            { q: 'The viewport meta tag goes in:', options: ['&lt;body&gt;', '&lt;head&gt;', 'CSS file', 'JavaScript'], correct: 1 }
+          ]
+        }
+      },
+      // ===== JavaScript =====
+      {
+        id: 'js-1', title: 'What is JavaScript?', tag: 'JS', duration: '6 min', order: 13,
+        content: `
+          <h3>The language of the browser</h3>
+          <p>JavaScript makes pages interactive: respond to clicks, update content, talk to servers.</p>
+          <pre>&lt;script&gt;
+  console.log('Hello from JS');
+  document.body.style.background = '#eef2ff';
+&lt;/script&gt;</pre>
+          <h3>Where it runs</h3>
+          <ul>
+            <li>Browser (frontend)</li>
+            <li>Node.js (servers, tools)</li>
+          </ul>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'JavaScript in the browser mainly:', options: ['Styles pages', 'Makes pages interactive', 'Stores databases', 'Replaces HTML'], correct: 1 },
+            { q: 'To print a message in the console use:', options: ['print()', 'console.log()', 'echo()', 'alert.log()'], correct: 1 },
+            { q: 'JS can also run on servers with:', options: ['Only browsers', 'Node.js', 'CSS', 'HTML5'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'js-2', title: 'Variables & Types', tag: 'JS', duration: '8 min', order: 14,
+        content: `
+          <h3>Declaring values</h3>
+          <pre>let name = 'Ada';
+const PI = 3.14;
+var oldStyle = true; // prefer let/const
+
+// Types
+typeof 42;        // "number"
+typeof 'hi';      // "string"
+typeof true;      // "boolean"
+typeof null;      // "object" (quirk)
+typeof undefined; // "undefined"</pre>
+          <p>Use <code>const</code> by default; <code>let</code> when you need to reassign.</p>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'Preferred way to declare a constant:', options: ['var', 'let', 'const', 'static'], correct: 2 },
+            { q: 'typeof "hello" returns:', options: ['text', 'string', 'String', 'char'], correct: 1 },
+            { q: 'Which can be reassigned?', options: ['const only', 'let', 'Neither', 'Only var in strict mode'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'js-3', title: 'Functions', tag: 'JS', duration: '8 min', order: 15,
+        content: `
+          <h3>Reusable blocks of code</h3>
+          <pre>function greet(name) {
+  return 'Hello, ' + name;
+}
+
+// Arrow function
+const add = (a, b) => a + b;
+
+console.log(greet('World')); // Hello, World
+console.log(add(2, 3));      // 5</pre>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'A function that returns a value uses the keyword:', options: ['give', 'return', 'output', 'yield'], correct: 1 },
+            { q: 'Arrow functions use:', options: ['function =>', '() =>', '->', '=> function'], correct: 1 },
+            { q: 'Parameters are listed:', options: ['After the body', 'Inside parentheses after the name', 'In a separate file', 'Only with const'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'js-4', title: 'DOM', tag: 'JS', duration: '9 min', order: 16,
+        content: `
+          <h3>Document Object Model</h3>
+          <p>The DOM is the live tree of HTML elements JS can read and change.</p>
+          <pre>const title = document.querySelector('h1');
+title.textContent = 'Updated!';
+title.classList.add('highlight');
+
+const btn = document.getElementById('save');
+btn.addEventListener('click', () => {
+  alert('Saved');
+});</pre>
+        `,
+        quiz: {
+          timeLimitSec: 70,
+          questions: [
+            { q: 'document.querySelector selects:', options: ['Only IDs', 'The first matching CSS selector', 'All elements', 'Only classes'], correct: 1 },
+            { q: 'To change visible text use:', options: ['innerHTML only', 'textContent or innerText', 'value only', 'src'], correct: 1 },
+            { q: 'classList.add does what?', options: ['Removes a class', 'Adds a CSS class', 'Creates a new element', 'Deletes the node'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'js-5', title: 'Events', tag: 'JS', duration: '8 min', order: 17,
+        content: `
+          <h3>Responding to user actions</h3>
+          <pre>button.addEventListener('click', (e) => {
+  e.preventDefault();
+  console.log('Clicked');
+});
+
+input.addEventListener('input', (e) => {
+  console.log(e.target.value);
+});
+
+// Common events: click, submit, input, keydown, load
+</pre>
+        `,
+        quiz: {
+          timeLimitSec: 60,
+          questions: [
+            { q: 'To listen for a click use:', options: ['onclick only', 'addEventListener("click", …)', 'on("click")', 'watch("click")'], correct: 1 },
+            { q: 'e.preventDefault() stops:', options: ['The browser default action', 'All JavaScript', 'CSS', 'Network requests'], correct: 0 },
+            { q: 'The "input" event fires when:', options: ['Page loads', 'User types in a field', 'A form is submitted', 'Mouse moves'], correct: 1 }
+          ]
+        }
+      },
+      {
+        id: 'js-6', title: 'Modern JS', tag: 'JS', duration: '9 min', order: 18,
+        content: `
+          <h3>Useful modern features</h3>
+          <pre>// Destructuring
+const { name, age } = person;
+const [first, second] = arr;
+
+// Template literals
+const msg = \`Hello, \${name}!\`;
+
+// Array methods
+const doubled = nums.map(n => n * 2);
+const adults = people.filter(p => p.age >= 18);
+
+// Async
+async function load() {
+  const res = await fetch('/api/data');
+  const data = await res.json();
+}</pre>
+        `,
+        quiz: {
+          timeLimitSec: 70,
+          questions: [
+            { q: 'Template literals use which quotes?', options: ['Single', 'Double', 'Backticks `', 'None'], correct: 2 },
+            { q: 'Array.map returns:', options: ['A single value', 'A new array', 'Nothing', 'Only numbers'], correct: 1 },
+            { q: 'await can be used inside:', options: ['Any function', 'async functions', 'Only loops', 'CSS'], correct: 1 }
+          ]
+        }
+      }
+    ];
+
+    /* ========== STATE ========== */
+    let progress = {};
+    let currentUser = null;
+
+    function progressKey() {
+      if (currentUser?.id) return 'ch_progress_' + currentUser.id;
+      if (currentUser?.email) return 'ch_progress_' + currentUser.email;
+      return 'ch_progress_guest';
+    }
+    function loadProgress() {
+      try { progress = JSON.parse(localStorage.getItem(progressKey()) || '{}'); } catch { progress = {}; }
+    }
+    function saveProgress() {
+      localStorage.setItem(progressKey(), JSON.stringify(progress));
+    }
+    function getOverallStats() {
+      let completed = 0, quizzesTaken = 0, totalEarned = 0, totalPossible = 0;
+      COURSES.forEach(c => {
+        const p = progress[c.id] || {};
+        if (p.completed || p.attempted) completed++;
+        if (p.attempted) {
+          quizzesTaken++;
+          totalEarned += p.quizScore || 0;
+          totalPossible += p.quizTotal || 0;
+        }
+      });
+      const avg = totalPossible ? Math.round((totalEarned / totalPossible) * 100) : 0;
+      const allQuizzesDone = COURSES.every(c => progress[c.id]?.attempted);
+      return { completed, totalLessons: COURSES.length, quizzesTaken, avg, totalEarned, totalPossible, allQuizzesDone };
+    }
+    function displayName() { return currentUser?.name || currentUser?.email || 'Learner'; }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    function enterApp(user) {
+      currentUser = user;
+      loadProgress();
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('app').classList.add('show');
+      const name = user.name || user.email || 'User';
+      document.getElementById('userNameLabel').textContent = name;
+      document.getElementById('userAv').textContent = (name[0] || 'U').toUpperCase();
+      route();
+    }
+    function stayOnAuth() {
+      document.getElementById('authScreen').style.display = 'flex';
+      document.getElementById('app').classList.remove('show');
+      currentUser = null;
+    }
+
+    /* ========== AUTH ========== */
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const isLogin = tab.dataset.auth === 'login';
+        document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+        document.getElementById('signupForm').classList.toggle('hidden', isLogin);
+      });
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+      const msg = document.getElementById('loginMsg');
+      const btn = e.target.querySelector('button[type="submit"]');
+      if (btn) btn.disabled = true;
+      msg.className = 'form-msg'; msg.textContent = 'Signing in…';
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        const u = data.user;
+        const name = u.user_metadata?.full_name || u.user_metadata?.name || email.split('@')[0];
+        msg.className = 'form-msg ok'; msg.textContent = 'Welcome back!';
+        enterApp({ id: u.id, email: u.email, name });
+      } catch (err) {
+        msg.className = 'form-msg err'; msg.textContent = err.message || 'Login failed';
+      } finally { if (btn) btn.disabled = false; }
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
+      const password = document.getElementById('signupPassword').value;
+      const msg = document.getElementById('signupMsg');
+      const btn = e.target.querySelector('button[type="submit"]');
+      if (name.length < 2) { msg.className = 'form-msg err'; msg.textContent = 'Enter your full name for the certificate'; return; }
+      if (btn) btn.disabled = true;
+      msg.className = 'form-msg'; msg.textContent = 'Creating account…';
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email, password, options: { data: { full_name: name, name } }
+        });
+        if (error) throw error;
+        if (data.user && data.session) {
+          msg.className = 'form-msg ok'; msg.textContent = 'Account created!';
+          enterApp({ id: data.user.id, email: data.user.email, name });
+        } else {
+          msg.className = 'form-msg ok';
+          msg.textContent = 'Account created! Check email to confirm, then log in.';
+          document.querySelector('.auth-tab[data-auth="login"]')?.click();
+        }
+      } catch (err) {
+        msg.className = 'form-msg err'; msg.textContent = err.message || 'Sign up failed';
+      } finally { if (btn) btn.disabled = false; }
+    });
+
+    document.getElementById('guestBtn').addEventListener('click', () => {
+      const guestName = (prompt('Enter your name for the certificate (or leave blank for Guest):', '') || 'Guest').trim() || 'Guest';
+      enterApp({ id: 'guest', email: 'guest', name: guestName, mode: 'guest' });
+    });
+
+    document.getElementById('downloadAppBtn')?.addEventListener('click', async () => {
+      toast('Preparing download…');
+      try {
+        if (!window.JSZip) {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+            s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        }
+        const zip = new JSZip();
+        for (const f of ['index.html','manifest.json','sw.js','favicon.svg','icon-192.png','icon-512.png','certificate-template.jpg','README.md']) {
+          try { const res = await fetch('./' + f); if (res.ok) zip.file(f, await res.blob()); } catch {}
+        }
+        const content = await zip.generateAsync({ type: 'blob' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = 'coding-hub-app.zip';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        toast('Download started: coding-hub-app.zip');
+      } catch (err) {
+        toast('Download failed — open over HTTPS and try again.');
+        console.error(err);
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try { await supabase.auth.signOut(); } catch {}
+      stayOnAuth();
+    });
+
+    /* ========== ROUTER ========== */
+    function route() {
+      const hash = location.hash.slice(1) || '/';
+      const parts = hash.split('/').filter(Boolean);
+      const mainEl = document.getElementById('mainContent');
+      if (mainEl && parts[0] !== 'lab') mainEl.classList.remove('lab-wide');
+      document.querySelectorAll('.nav-link').forEach(a => {
+        const r = a.dataset.route;
+        a.classList.toggle('active', r === '/' + (parts[0] || '') || (parts.length === 0 && r === '/'));
+      });
+
+      if (parts[0] === 'lesson' && parts[1]) renderLesson(parts[1]);
+      else if (parts[0] === 'quiz' && parts[1]) renderQuiz(parts[1]);
+      else if (parts[0] === 'result' && parts[1]) renderResult(parts[1]);
+      else if (parts[0] === 'progress') renderProgress();
+      else if (parts[0] === 'lab') renderLab();
+      else if (parts[0] === 'certificate') renderCertificate();
+      else if (parts[0] === 'ai') renderAI();
+      else if (parts[0] === 'admin') renderAdmin();
+      else renderDashboard();
+    }
+    window.addEventListener('hashchange', route);
+
+    let activeTrack = 'all';
+
+    function renderDashboard() {
+      const stats = getOverallStats();
+      const main = document.getElementById('mainContent');
+      const certReady = stats.allQuizzesDone;
+      main.innerHTML = `
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">18 short lessons · Timed quizzes · No retries · Earn your certificate</p>
+        <div class="cert-banner ${certReady ? '' : 'locked'}">
+          <div>
+            <h3>${certReady ? '🎉 Certificate unlocked!' : 'Certificate of Completion'}</h3>
+            <p>${certReady ? 'Download your certificate with your name on it.' : `Complete all quizzes. Progress: ${stats.quizzesTaken}/${stats.totalLessons}`}</p>
+          </div>
+          <button class="btn" id="certDashBtn" ${certReady ? '' : 'disabled'}>${certReady ? 'View / Download certificate' : 'Locked'}</button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="label">Lessons done</div><div class="value indigo">${stats.completed}/${stats.totalLessons}</div></div>
+          <div class="stat-card"><div class="label">Quizzes taken</div><div class="value">${stats.quizzesTaken}</div></div>
+          <div class="stat-card"><div class="label">Average score</div><div class="value green">${stats.avg}%</div></div>
+          <div class="stat-card"><div class="label">Total marks</div><div class="value amber">${stats.totalEarned}/${stats.totalPossible || '—'}</div></div>
+        </div>
+        <div class="track-filter">
+          <button class="track-btn ${activeTrack==='all'?'active':''}" data-track="all">All</button>
+          <button class="track-btn ${activeTrack==='HTML'?'active':''}" data-track="HTML">HTML</button>
+          <button class="track-btn ${activeTrack==='CSS'?'active':''}" data-track="CSS">CSS</button>
+          <button class="track-btn ${activeTrack==='JS'?'active':''}" data-track="JS">JavaScript</button>
+        </div>
+        <div class="section-head"><h2>Lessons</h2></div>
+        <div class="lesson-grid" id="lessonGrid"></div>
+      `;
+      main.querySelectorAll('.track-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeTrack = btn.dataset.track;
+          renderDashboard();
+        });
+      });
+      document.getElementById('certDashBtn')?.addEventListener('click', () => {
+        if (getOverallStats().allQuizzesDone) location.hash = '#/certificate';
+      });
+      const grid = document.getElementById('lessonGrid');
+      COURSES.sort((a, b) => a.order - b.order)
+        .filter(c => activeTrack === 'all' || c.tag === activeTrack)
+        .forEach(c => {
+          const p = progress[c.id] || {};
+          let status = 'open', statusText = 'Start';
+          if (p.attempted) { status = 'done'; statusText = `Quiz: ${p.quizScore}/${p.quizTotal}`; }
+          else if (p.completed) { status = 'open'; statusText = 'Take quiz'; }
+          const tagClass = c.tag === 'HTML' ? 'html' : c.tag === 'CSS' ? 'css' : 'js';
+          const card = document.createElement('article');
+          card.className = 'lesson-card';
+          card.innerHTML = `
+            <span class="tag ${tagClass}">${c.tag}</span>
+            <h3>${c.title}</h3>
+            <p>Short lesson + timed quiz. Score counts toward your total marks.</p>
+            <div class="meta">
+              <span>${c.duration} · ${c.quiz.questions.length} Q</span>
+              <span class="status ${status}">${statusText}</span>
+            </div>
+          `;
+          card.addEventListener('click', () => location.hash = '#/lesson/' + c.id);
+          grid.appendChild(card);
+        });
+    }
+
+    function renderLesson(id) {
+      const course = COURSES.find(c => c.id === id);
+      if (!course) { location.hash = '#/'; return; }
+      const p = progress[id] || {};
+      const main = document.getElementById('mainContent');
+      const tagClass = course.tag === 'HTML' ? 'html' : course.tag === 'CSS' ? 'css' : 'js';
+      main.innerHTML = `
+        <div class="lesson-view">
+          <a href="#/" class="back">← Back to dashboard</a>
+          <div class="lesson-body">
+            <span class="tag ${tagClass}" style="display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;margin-bottom:12px">${course.tag}</span>
+            <h2>${course.title}</h2>
+            <div class="content-html">${course.content}</div>
+          </div>
+          <div class="lesson-actions">
+            ${p.attempted
+              ? `<button class="btn btn-ghost" disabled>Quiz already taken (no retry)</button>
+                 <a href="#/result/${id}" class="btn btn-primary">View result</a>`
+              : `<button class="btn btn-primary" id="startQuizBtn">Start timed quiz (${course.quiz.timeLimitSec}s)</button>`
+            }
+            <button class="btn btn-ghost" id="markReadBtn">Mark lesson as read</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('markReadBtn')?.addEventListener('click', () => {
+        if (!progress[id]) progress[id] = {};
+        progress[id].completed = true;
+        saveProgress();
+        toast('Lesson marked as read');
+      });
+      document.getElementById('startQuizBtn')?.addEventListener('click', () => {
+        if (!progress[id]) progress[id] = {};
+        progress[id].completed = true;
+        saveProgress();
+        location.hash = '#/quiz/' + id;
+      });
+    }
+
+    let quizTimer = null;
+    let quizAnswers = {};
+    let quizRemaining = 0;
+
+    function renderQuiz(id) {
+      const course = COURSES.find(c => c.id === id);
+      if (!course) { location.hash = '#/'; return; }
+      if (progress[id]?.attempted) {
+        toast('You already took this quiz. No retries allowed.');
+        location.hash = '#/result/' + id;
+        return;
+      }
+
+      quizAnswers = {};
+      quizRemaining = course.quiz.timeLimitSec;
+      const questions = course.quiz.questions;
+      const main = document.getElementById('mainContent');
+
+      main.innerHTML = `
+        <div class="quiz-header">
+          <div>
+            <h1 class="page-title" style="margin:0;font-size:1.3rem">${course.title} — Quiz</h1>
+            <div class="quiz-progress">${questions.length} questions · No retry</div>
+          </div>
+          <div class="timer" id="quizTimer">${formatTime(quizRemaining)}</div>
+        </div>
+        <form id="quizForm"></form>
+        <div style="margin-top:20px;display:flex;gap:12px">
+          <button type="button" class="btn btn-primary" id="submitQuizBtn">Submit quiz</button>
+        </div>
+      `;
+
+      const form = document.getElementById('quizForm');
+      questions.forEach((q, i) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML = `<h3>${i + 1}. ${q.q}</h3>`;
+        q.options.forEach((opt, j) => {
+          const oid = `q${i}_o${j}`;
+          const div = document.createElement('div');
+          div.className = 'option';
+          div.innerHTML = `
+            <input type="radio" name="q${i}" id="${oid}" value="${j}" />
+            <label for="${oid}">${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</label>
+          `;
+          div.addEventListener('click', () => {
+            div.parentElement.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+            div.classList.add('selected');
+            document.getElementById(oid).checked = true;
+            quizAnswers[i] = j;
+          });
+          card.appendChild(div);
+        });
+        form.appendChild(card);
+      });
+
+      clearInterval(quizTimer);
+      quizTimer = setInterval(() => {
+        quizRemaining--;
+        const el = document.getElementById('quizTimer');
+        if (el) {
+          el.textContent = formatTime(quizRemaining);
+          if (quizRemaining <= 15) el.classList.add('danger');
+        }
+        if (quizRemaining <= 0) {
+          clearInterval(quizTimer);
+          finishQuiz(id, true);
+        }
+      }, 1000);
+
+      document.getElementById('submitQuizBtn').addEventListener('click', () => finishQuiz(id, false));
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function finishQuiz(id, auto) {
+      clearInterval(quizTimer);
+      const course = COURSES.find(c => c.id === id);
+      if (!course || progress[id]?.attempted) return;
+
+      let score = 0;
+      course.quiz.questions.forEach((q, i) => {
+        if (quizAnswers[i] === q.correct) score++;
+      });
+      const total = course.quiz.questions.length;
+
+      progress[id] = {
+        completed: true,
+        attempted: true,
+        quizScore: score,
+        quizTotal: total,
+        date: new Date().toISOString()
+      };
+      saveProgress();
+
+      if (auto) toast('Time is up! Quiz auto-submitted.');
+      if (getOverallStats().allQuizzesDone) setTimeout(() => toast('All courses complete! Claim your certificate.'), 800);
+      location.hash = '#/result/' + id;
+    }
+
+    function renderResult(id) {
+      const course = COURSES.find(c => c.id === id);
+      const p = progress[id];
+      if (!course || !p?.attempted) { location.hash = '#/'; return; }
+      const pct = Math.round((p.quizScore / p.quizTotal) * 100);
+      const passed = pct >= 50;
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <div class="result-card">
+          <div style="font-size:14px;font-weight:600;color:var(--muted)">${course.title}</div>
+          <div class="score-big ${passed ? 'pass' : 'fail'}">${p.quizScore}/${p.quizTotal}</div>
+          <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px">${pct}% — ${passed ? 'Passed' : 'Needs improvement'}</div>
+          <p style="color:var(--muted);font-size:14px;margin-bottom:24px">
+            This score is locked and added to your total marks. No retries.
+          </p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <a href="#/" class="btn btn-primary">Back to dashboard</a>
+            <a href="#/progress" class="btn btn-ghost">View performance</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderProgress() {
+      const stats = getOverallStats();
+      const main = document.getElementById('mainContent');
+      let rows = '';
+      COURSES.sort((a, b) => a.order - b.order).forEach(c => {
+        const p = progress[c.id] || {};
+        const score = p.attempted ? `${p.quizScore}/${p.quizTotal} (${Math.round(p.quizScore / p.quizTotal * 100)}%)` : '—';
+        const status = p.attempted ? 'Completed' : (p.completed ? 'Read only' : 'Not started');
+        const date = p.date ? new Date(p.date).toLocaleDateString() : '—';
+        rows += `<tr>
+          <td><strong>${c.title}</strong><br><span style="font-size:12px;color:var(--muted)">${c.tag}</span></td>
+          <td>${status}</td>
+          <td>${score}</td>
+          <td>${date}</td>
+        </tr>`;
+      });
+      main.innerHTML = `
+        <h1 class="page-title">My Performance</h1>
+        <p class="page-sub">Name on certificate: <strong>${displayName()}</strong> · Scores are permanent.</p>
+        <div class="stats-row">
+          <div class="stat-card"><div class="label">Average</div><div class="value green">${stats.avg}%</div></div>
+          <div class="stat-card"><div class="label">Total marks</div><div class="value indigo">${stats.totalEarned} / ${stats.totalPossible || 0}</div></div>
+          <div class="stat-card"><div class="label">Quizzes taken</div><div class="value">${stats.quizzesTaken}</div></div>
+        </div>
+        <table class="progress-table">
+          <thead><tr><th>Lesson</th><th>Status</th><th>Quiz score</th><th>Date</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function callGemini(prompt) {
+      if (!GEMINI_API_KEY) {
+        return 'AI is not configured yet.\n\n1. Get a free API key at https://aistudio.google.com/apikey\n2. Paste it into GEMINI_API_KEY in index.html\n3. Reload the page.';
+      }
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { temperature: 0.3, maxOutputTokens: 800 }
+            })
+          }
+        );
+        const data = await res.json();
+        if (data.error) return 'API error: ' + (data.error.message || JSON.stringify(data.error));
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from AI.';
+      } catch (err) {
+        return 'Network error: ' + err.message;
+      }
+    }
+
+    
+    
+    function renderLab() {
+      const main = document.getElementById('mainContent');
+      main.classList.add('lab-wide');
+      let projects = loadProjects();
+      let activeId = projects[0]?.id || null;
+
+      const ensureActive = () => {
+        if (!projects.length) {
+          const id = 'p_' + Date.now();
+          projects = [{ id, name: 'My first project', html: DEFAULT_HTML, css: DEFAULT_CSS, js: DEFAULT_JS, updated: new Date().toISOString() }];
+          saveProjects(projects);
+          activeId = id;
+        }
+        if (!activeId || !projects.find(p => p.id === activeId)) activeId = projects[0].id;
+      };
+      ensureActive();
+
+      const paint = () => {
+        ensureActive();
+        const proj = projects.find(p => p.id === activeId) || projects[0];
+        main.innerHTML = `
+          <h1 class="page-title">Code Lab</h1>
+          <p class="page-sub">Practical HTML / CSS / JS compiler with personal project manager. Work is saved in this browser.</p>
+          <div class="lab-layout">
+            <aside class="lab-sidebar">
+              <h3>My projects</h3>
+              <button class="btn btn-primary" id="newProjBtn" style="width:100%">+ New project</button>
+              <ul class="proj-list" id="projList">
+                ${projects.map(p => `
+                  <li class="${p.id === activeId ? 'active' : ''}" data-id="${p.id}">
+                    <span>${p.name.replace(/</g,'&lt;')}</span>
+                    <button class="del" data-del="${p.id}" title="Delete">✕</button>
+                  </li>`).join('')}
+              </ul>
+            </aside>
+            <div class="lab-main">
+              <div class="lab-toolbar">
+                <input class="lab-name-input" id="projName" value="${(proj.name || '').replace(/"/g, '&quot;')}" />
+                <button class="btn btn-primary" id="runBtn" style="width:auto">▶ Run</button>
+                <button class="btn btn-ghost" id="saveProjBtn">Save</button>
+                <button class="btn btn-ghost" id="exportProjBtn">Export HTML</button>
+              </div>
+              <div class="lab-editors">
+                <div class="lab-pane">
+                  <div class="pane-head">HTML</div>
+                  <textarea id="edHtml" spellcheck="false"></textarea>
+                </div>
+                <div class="lab-pane">
+                  <div class="pane-head">CSS</div>
+                  <textarea id="edCss" spellcheck="false"></textarea>
+                </div>
+                <div class="lab-pane">
+                  <div class="pane-head">JavaScript</div>
+                  <textarea id="edJs" spellcheck="false"></textarea>
+                </div>
+                <div class="lab-preview">
+                  <div class="pane-head" style="padding:8px 12px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--muted);border-bottom:1px solid var(--line);background:var(--bg)">Live preview</div>
+                  <iframe id="labFrame" sandbox="allow-scripts allow-modals allow-forms allow-same-origin" title="Preview"></iframe>
+                </div>
+              </div>
+            </div>
+          </div>`;
+
+        document.getElementById('edHtml').value = proj.html || '';
+        document.getElementById('edCss').value = proj.css || '';
+        document.getElementById('edJs').value = proj.js || '';
+
+        const getVals = () => ({
+          html: document.getElementById('edHtml').value,
+          css: document.getElementById('edCss').value,
+          js: document.getElementById('edJs').value,
+          name: document.getElementById('projName').value.trim() || 'Untitled'
+        });
+
+        const runPreview = () => {
+          const { html, css, js } = getVals();
+          let body = html;
+          // If full document, inject css/js; else wrap
+          let doc;
+          if (/<html[\s>]/i.test(html)) {
+            doc = html;
+            if (css && !/<style[\s>]/i.test(doc)) {
+              doc = doc.replace(/<\/head>/i, `<style>${css}</style></head>`);
+              if (!/<\/head>/i.test(doc)) doc = `<style>${css}</style>` + doc;
+            } else if (css) {
+              doc = doc.replace(/<\/head>/i, `<style>${css}</style></head>`);
+            }
+            if (js) {
+              if (/<\/body>/i.test(doc)) doc = doc.replace(/<\/body>/i, `<script>${js}<\/script></body>`);
+              else doc += `<script>${js}<\/script>`;
+            }
+          } else {
+            doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
+          }
+          const frame = document.getElementById('labFrame');
+          frame.srcdoc = doc;
+        };
+
+        const persist = () => {
+          const v = getVals();
+          projects = projects.map(p => p.id === activeId ? { ...p, ...v, updated: new Date().toISOString() } : p);
+          saveProjects(projects);
+          toast('Project saved');
+        };
+
+        document.getElementById('runBtn').addEventListener('click', runPreview);
+        document.getElementById('saveProjBtn').addEventListener('click', () => { persist(); paint(); });
+        document.getElementById('exportProjBtn').addEventListener('click', () => {
+          const { html, css, js, name } = getVals();
+          const doc = `<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<title>${name}</title>\n<style>\n${css}\n</style>\n</head>\n<body>\n${/<html/i.test(html) ? '' : html}\n<script>\n${js}\n<\/script>\n</body>\n</html>`;
+          const blob = new Blob([/<html/i.test(html) ? (() => {
+            let d = html;
+            if (css) d = d.includes('</head>') ? d.replace('</head>', `<style>${css}</style></head>`) : `<style>${css}</style>` + d;
+            if (js) d = d.includes('</body>') ? d.replace('</body>', `<script>${js}<\/script></body>`) : d + `<script>${js}<\/script>`;
+            return d;
+          })() : doc], { type: 'text/html' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = (name.replace(/[^\w\-]+/g, '_') || 'project') + '.html';
+          a.click();
+          URL.revokeObjectURL(a.href);
+          toast('Exported HTML file');
+        });
+        document.getElementById('newProjBtn').addEventListener('click', () => {
+          const name = prompt('Project name:', 'New project') || 'New project';
+          const id = 'p_' + Date.now();
+          projects.unshift({ id, name, html: DEFAULT_HTML, css: DEFAULT_CSS, js: DEFAULT_JS, updated: new Date().toISOString() });
+          saveProjects(projects);
+          activeId = id;
+          paint();
+        });
+        document.getElementById('projList').addEventListener('click', e => {
+          const del = e.target.closest('[data-del]');
+          if (del) {
+            e.stopPropagation();
+            const id = del.getAttribute('data-del');
+            if (!confirm('Delete this project?')) return;
+            projects = projects.filter(p => p.id !== id);
+            saveProjects(projects);
+            activeId = projects[0]?.id || null;
+            paint();
+            return;
+          }
+          const li = e.target.closest('[data-id]');
+          if (li) {
+            // auto-save current before switch
+            try { persist(); } catch {}
+            activeId = li.getAttribute('data-id');
+            paint();
+          }
+        });
+        runPreview();
+      };
+      paint();
+    }
+
+
+    async function generateCertificateCanvas(name) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = CERT_TEMPLATE; });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      // Recipient name: same name collected at sign-up / guest login
+      const display = (name || 'Learner').trim();
+      const cx = canvas.width / 2;
+      // Blank band between blue banner and "has successfully completed…"
+      const nameY = canvas.height * 0.445;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // Scale font for long/short names
+      let fontSize = Math.min(64, Math.max(32, Math.floor(canvas.width / (Math.max(display.length, 10) * 0.62))));
+      ctx.font = 'italic ' + fontSize + 'px "Great Vibes", "Segoe Script", "Brush Script MT", cursive';
+      let metrics = ctx.measureText(display);
+      const maxWidth = canvas.width * 0.72;
+      while (metrics.width > maxWidth && fontSize > 28) {
+        fontSize -= 2;
+        ctx.font = 'italic ' + fontSize + 'px "Great Vibes", "Segoe Script", "Brush Script MT", cursive';
+        metrics = ctx.measureText(display);
+      }
+
+      // Soft white plate so name stays readable on any background
+      const padX = 36, padY = 14;
+      ctx.fillStyle = 'rgba(255,255,255,0.88)';
+      ctx.fillRect(
+        cx - metrics.width / 2 - padX,
+        nameY - fontSize / 2 - padY,
+        metrics.width + padX * 2,
+        fontSize + padY * 2
+      );
+
+      // Navy ink matching certificate design
+      ctx.fillStyle = '#0B1F4A';
+      ctx.fillText(display, cx, nameY);
+      return canvas;
+    }
+
+    async function renderCertificate() {
+      const stats = getOverallStats();
+      const main = document.getElementById('mainContent');
+      const name = displayName();
+      if (!stats.allQuizzesDone) {
+        main.innerHTML = '<h1 class="page-title">Certificate</h1><p class="page-sub">Complete every timed quiz to unlock your certificate. Your name will appear exactly as at sign-up.</p><div class="cert-banner locked"><div><h3>Not unlocked yet</h3><p>Progress: ' + stats.quizzesTaken + ' / ' + stats.totalLessons + ' · Name on certificate: <strong>' + name + '</strong></p></div><a href="#/" class="btn">Continue learning</a></div>';
+        return;
+      }
+      main.innerHTML = '<div class="cert-page"><h1 class="page-title">Your Certificate</h1><p class="page-sub">Awarded to <strong>' + name + '</strong></p><div class="cert-preview-wrap"><canvas id="certCanvas"></canvas></div><div class="cert-actions"><button class="btn btn-primary" id="dlCertBtn" style="width:auto">Download certificate (PNG)</button><a href="#/" class="btn btn-ghost">Back</a></div></div>';
+      try {
+        const canvas = await generateCertificateCanvas(name);
+        const host = document.getElementById('certCanvas');
+        host.width = canvas.width; host.height = canvas.height;
+        host.getContext('2d').drawImage(canvas, 0, 0);
+        document.getElementById('dlCertBtn').addEventListener('click', () => {
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = 'CodingHub-Certificate-' + name.replace(/\\s+/g, '-') + '.png';
+          a.click();
+          toast('Certificate downloaded');
+        });
+      } catch (err) {
+        main.querySelector('.cert-preview-wrap').innerHTML = '<p style="padding:40px;color:var(--red)">Could not load certificate-template.jpg</p>';
+        console.error(err);
+      }
+    }
+
+function renderAI() {
+      const main = document.getElementById('mainContent');
+      main.innerHTML = `
+        <h1 class="page-title">AI Check</h1>
+        <p class="page-sub">Paste code or an answer. The free Google Gemini API will review it for correctness, style, and possible issues.</p>
+        <div class="ai-panel">
+          <h3>Code / Answer detector & feedback</h3>
+          <textarea id="aiInput" placeholder="Paste HTML, CSS, JavaScript, or a written answer here..."></textarea>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" id="aiReviewBtn">Review with AI</button>
+            <button class="btn btn-ghost" id="aiDetectBtn">Detect language / issues</button>
+          </div>
+          <div class="ai-result hidden" id="aiResult"></div>
+        </div>
+      `;
+      const resultEl = document.getElementById('aiResult');
+      const run = async (mode) => {
+        const text = document.getElementById('aiInput').value.trim();
+        if (!text) { toast('Paste something first'); return; }
+        resultEl.classList.remove('hidden');
+        resultEl.textContent = 'Thinking…';
+        const prompt = mode === 'detect'
+          ? `You are a coding tutor for beginners. Analyze this snippet. Reply with:\n1) Detected language\n2) Any syntax or logic issues\n3) One short improvement tip\n\nCode:\n${text}`
+          : `You are a strict but helpful coding instructor. Review this student submission. Give:\n- Correctness (pass/fail style)\n- What is good\n- What to fix\n- A corrected version if needed (short)\n\nSubmission:\n${text}`;
+        const out = await callGemini(prompt);
+        resultEl.textContent = out;
+      };
+      document.getElementById('aiReviewBtn').addEventListener('click', () => run('review'));
+      document.getElementById('aiDetectBtn').addEventListener('click', () => run('detect'));
+    }
+
+    function renderAdmin() {
+      const main = document.getElementById('mainContent');
+      const unlocked = sessionStorage.getItem('ch_admin') === '1';
+
+      if (!unlocked) {
+        main.innerHTML = `
+          <div class="admin-gate">
+            <h2 style="font-family:var(--display);font-weight:800;margin-bottom:8px">Admin</h2>
+            <p style="color:var(--muted);font-size:14px;margin-bottom:18px">Enter the secret password</p>
+            <div class="form-group">
+              <input type="password" id="adminPass" placeholder="Password" />
+            </div>
+            <button class="btn btn-primary" id="adminUnlock">Unlock</button>
+            <p class="form-msg" id="adminMsg"></p>
+          </div>
+        `;
+        document.getElementById('adminUnlock').addEventListener('click', () => {
+          const pass = document.getElementById('adminPass').value;
+          if (pass === ADMIN_PASSWORD) {
+            sessionStorage.setItem('ch_admin', '1');
+            renderAdmin();
+          } else {
+            document.getElementById('adminMsg').className = 'form-msg err';
+            document.getElementById('adminMsg').textContent = 'Wrong password';
+          }
+        });
+        return;
+      }
+
+      let studentRows = '';
+      try {
+        const users = JSON.parse(localStorage.getItem('ch_users') || '{}');
+        Object.keys(users).forEach(email => {
+          const key = 'ch_progress_' + email;
+          const pr = JSON.parse(localStorage.getItem(key) || '{}');
+          let scores = 0, possible = 0, taken = 0;
+          Object.values(pr).forEach(p => {
+            if (p.attempted) { taken++; scores += p.quizScore; possible += p.quizTotal; }
+          });
+          const avg = possible ? Math.round(scores / possible * 100) : 0;
+          studentRows += `<li><span>${users[email].name || email}</span><span>${taken} quizzes · ${avg}% avg</span></li>`;
+        });
+      } catch {}
+
+      main.innerHTML = `
+        <div class="admin-panel">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+            <h1 class="page-title" style="margin:0">Admin panel</h1>
+            <button class="btn btn-ghost" id="adminLock">Lock</button>
+          </div>
+          <div class="admin-section">
+            <h3>Lessons & quizzes</h3>
+            <ul class="admin-list">
+              ${COURSES.map(c => `<li><span>${c.order}. ${c.title}</span><span>${c.quiz.questions.length} Q · ${c.quiz.timeLimitSec}s</span></li>`).join('')}
+            </ul>
+            <p style="font-size:13px;color:var(--muted);margin-top:12px">To edit lessons, change the COURSES array in index.html and redeploy.</p>
+          </div>
+          <div class="admin-section">
+            <h3>Registered students (local)</h3>
+            <ul class="admin-list">
+              ${studentRows || '<li><span>No registered students yet</span></li>'}
+            </ul>
+          </div>
+          <div class="admin-section">
+            <h3>Quick stats</h3>
+            <p style="font-size:14px">Total lessons: <strong>${COURSES.length}</strong> (6 HTML + 6 CSS + 6 JS)</p>
+            <p style="font-size:14px;margin-top:6px">Features: Code Lab (personal projects), light/dark theme, certificates, Supabase auth.</p>
+            <p style="font-size:14px;margin-top:6px">Secret admin URL: <code>#/admin</code> · password: ADMIN_PASSWORD in code.</p>
+            <p style="font-size:14px;margin-top:6px">Change ADMIN_PASSWORD before going live.</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('adminLock').addEventListener('click', () => {
+        sessionStorage.removeItem('ch_admin');
+        location.hash = '#/';
+      });
+    }
+
+    (async function boot() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const u = session.user;
+          const name = u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'User';
+          enterApp({ id: u.id, email: u.email, name });
+          return;
+        }
+      } catch {}
+      stayOnAuth();
+    })();
+    supabase.auth.onAuthStateChange((event) => { if (event === 'SIGNED_OUT') stayOnAuth(); });
+
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
